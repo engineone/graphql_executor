@@ -32,7 +32,7 @@ func NewGraphQLExecutor() *GraphQLExecutor {
 	}
 }
 
-func (e *GraphQLExecutor) New() *GraphQLExecutor {
+func (e *GraphQLExecutor) New() types.Executor {
 	return NewGraphQLExecutor()
 }
 

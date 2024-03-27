@@ -11,6 +11,8 @@ github.com/engineone/http_executor v0.0.0-20240306112705-b40027c192a5 h1:nm7yu1G
 github.com/engineone/http_executor v0.0.0-20240306112705-b40027c192a5/go.mod h1:Z6QOMcJO/3Su2ND3guGiis/OWeUT313GZRDHOJOwvgE=
 github.com/engineone/types v0.0.0-20240306103447-b6bbecea23e1 h1:lw4BV6Ia0c7/kg+97QNk42om94gKgWC291/Lj4aBSMM=
 github.com/engineone/types v0.0.0-20240306103447-b6bbecea23e1/go.mod h1:CE2d4XrctoMENyHiMIyk638Fp8CCPRKLZfGfUtyjGmQ=
+github.com/engineone/types v0.0.0-20240327120609-aa4e199efdcc h1:7oT/Zo65vIyILUxn4nhNkTpu1ASxrITQDoYP4YxfTJw=
+github.com/engineone/types v0.0.0-20240327120609-aa4e199efdcc/go.mod h1:CE2d4XrctoMENyHiMIyk638Fp8CCPRKLZfGfUtyjGmQ=
 github.com/engineone/utils v0.0.0-20240306104230-451168fef568 h1:8PDSqBsBR8R9JJDYDj/F8UlZ4IfENkVPQpr4G7pGBx0=
 github.com/engineone/utils v0.0.0-20240306104230-451168fef568/go.mod h1:dybc8T1wMA93Qcyhz2fBmf1w4u3VD9pKaPXMOS1DkFQ=
 github.com/go-logr/logr v1.4.1 h1:pKouT5E8xu9zeFC39JXRDukb6JFQPXM5p5I91188VAQ=

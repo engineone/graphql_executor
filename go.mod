@@ -5,7 +5,7 @@ go 1.22.1
 require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/engineone/http_executor v0.0.0-20240306112705-b40027c192a5
-	github.com/engineone/types v0.0.0-20240306103447-b6bbecea23e1
+	github.com/engineone/types v0.0.0-20240327120609-aa4e199efdcc
 	github.com/onsi/ginkgo/v2 v2.16.0
 	github.com/onsi/gomega v1.31.1
 	github.com/palantir/stacktrace v0.0.0-20161112013806-78658fd2d177
