@@ -23,7 +23,7 @@ var _ = Describe("GraphQLExecutor", func() {
 			Input: map[string]interface{}{
 				"url":     "http://localhost:8080",
 				"headers": map[string]interface{}{"Content-Type": "application/json"},
-				"body":    map[string]interface{}{"query": "{ hello }"},
+				"query":   "{ hello }",
 			},
 		}
 	})

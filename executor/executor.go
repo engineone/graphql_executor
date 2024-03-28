@@ -4,30 +4,33 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/asaskevich/govalidator"
 	http_executor "github.com/engineone/http_executor/executor"
 	"github.com/engineone/types"
+	"github.com/engineone/utils"
+	validate "github.com/go-playground/validator/v10"
 	"github.com/palantir/stacktrace"
 )
 
+type Input struct {
+	URL       string                 `json:"url" valid:"required,url"`
+	Headers   map[string]string      `json:"headers" valid:"dictionary"`
+	Query     string                 `json:"query" valid:"required"`
+	Variables map[string]interface{} `json:"variables" valid:"dictionary"`
+}
+
+type Output struct {
+	Headers map[string]string      `json:"headers" valid:"required,dictionary"`
+	Body    map[string]interface{} `json:"body" valid:"required,dictionary"`
+}
+
 type GraphQLExecutor struct {
-	inputRules  map[string]interface{}
-	outputRules map[string]interface{}
 	*http_executor.HttpExecutor
+	inputCache *Input
 }
 
 // NewGraphQLExecutor creates a new GraphQLExecutor
 func NewGraphQLExecutor() *GraphQLExecutor {
 	return &GraphQLExecutor{
-		inputRules: map[string]interface{}{
-			"url":     "required,url",
-			"headers": "required,dictionary",
-			"body":    "required,dictionary",
-		},
-		outputRules: map[string]interface{}{
-			"headers": "required,dictionary",
-			"body":    "required,dictionary",
-		},
 		HttpExecutor: http_executor.NewHttpExecutor(),
 	}
 }
@@ -49,11 +52,23 @@ func (e *GraphQLExecutor) Description() string {
 }
 
 func (e *GraphQLExecutor) InputRules() map[string]interface{} {
-	return e.inputRules
+	return utils.ExtractValidationRules(&Input{})
 }
 
 func (e *GraphQLExecutor) OutputRules() map[string]interface{} {
-	return e.outputRules
+	return utils.ExtractValidationRules(&Output{})
+}
+
+func (e *GraphQLExecutor) convertInput(input interface{}) (*Input, error) {
+	if e.inputCache != nil {
+		return e.inputCache, nil
+	}
+
+	e.inputCache = &Input{}
+	if err := utils.ConvertToStruct(input, e.inputCache); err != nil {
+		return nil, stacktrace.PropagateWithCode(err, types.ErrInvalidTask, "Error converting input to struct")
+	}
+	return e.inputCache, nil
 }
 
 func (e *GraphQLExecutor) Validate(ctx context.Context, task *types.Task, tasks []*types.Task) error {
@@ -61,13 +76,17 @@ func (e *GraphQLExecutor) Validate(ctx context.Context, task *types.Task, tasks 
 		return stacktrace.NewErrorWithCode(types.ErrInvalidTask, "Input is required")
 	}
 
-	input, ok := task.Input.(map[string]interface{})
-	if !ok {
-		return stacktrace.NewErrorWithCode(types.ErrInvalidTask, "Input must be an object")
+	var err error
+	e.inputCache, err = e.convertInput(task.Input)
+	if err != nil {
+		return stacktrace.Propagate(err, "failed to convert input")
 	}
 
-	_, err := govalidator.ValidateMap(input, e.inputRules)
-	return stacktrace.PropagateWithCode(err, types.ErrInvalidTask, "Input validation failed")
+	v := validate.New()
+	if err := v.Struct(e.inputCache); err != nil {
+		return stacktrace.PropagateWithCode(err, types.ErrInvalidTask, "Input validation failed")
+	}
+	return nil
 }
 
 func (e *GraphQLExecutor) Execute(ctx context.Context, task *types.Task, wf []*types.Task) (interface{}, error) {
@@ -84,6 +103,19 @@ func (e *GraphQLExecutor) Execute(ctx context.Context, task *types.Task, wf []*t
 	}
 	headers["Content-Type"] = "application/json"
 	input["headers"] = headers
+
+	// Use query and variables from the input to put together the body
+	body := map[string]interface{}{
+		"query":     input["query"],
+		"variables": input["variables"],
+	}
+
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return nil, stacktrace.Propagate(err, "failed to marshal body")
+	}
+
+	input["body"] = string(bodyBytes)
 
 	// Put the headers and input back into the task
 	task.Input = input
